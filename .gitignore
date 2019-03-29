@@ -8,6 +8,9 @@
 # data
 data/
 
+# trace
+trace/
+
 # model
 model/
 
