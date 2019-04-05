@@ -8,3 +8,4 @@
 + `beauty-of-deep-learning` 《深度学习之美》
 + `deep-learning-from-scrach` 《深度学习入门》
 + `python-deep-learning` 《Python 深度学习》
++ `data_science_master` 《精通数据科学》 注：使用 py2
