@@ -4,8 +4,8 @@
 
 + `build_nn` 《Python 神经网络编程》
 + `tf_tutorial` 《Tensorflow 入门与实战》
-+ `tensorflow-in-action` 《实战 Google 深度学习框架》
-+ `beauty-of-deep-learning` 《深度学习之美》
-+ `deep-learning-from-scrach` 《深度学习入门》
-+ `python-deep-learning` 《Python 深度学习》
++ `tensorflow_in_action` 《实战 Google 深度学习框架》
++ `beauty_of_deep_learning` 《深度学习之美》
++ `deep_learning_from_scrach` 《深度学习入门》
++ `python_deep_learning` 《Python 深度学习》
 + `data_science_master` 《精通数据科学》 注：使用 py2
