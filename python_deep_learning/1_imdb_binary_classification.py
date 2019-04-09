@@ -4,6 +4,7 @@ from keras import models, layers, optimizers
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+from keras import regularizers
 
 
 # 加载数据，只保留前 10000 个最常出现的单次
@@ -89,8 +90,13 @@ print("注意这个模型是过拟合的，因为验证集的 loss 不断在上�
 
 print("重新训练一个模型")
 new_model = models.Sequential()
-new_model.add(layers.Dense(16, activation='relu', input_shape=(10000, )))
-new_model.add(layers.Dense(16, activation='relu'))
+# 添加 L2
+new_model.add(layers.Dense(16, kernel_regularizer=regularizers.l2(0.001), 
+                            activation='relu', input_shape=(10000, )))
+new_model.add(layers.Dropout(0.5))
+new_model.add(layers.Dense(16, kernel_regularizer=regularizers.l2(0.001), 
+                            activation='relu'))
+new_model.add(layers.Dropout(0.5))
 new_model.add(layers.Dense(1, activation='sigmoid'))
 
 new_model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
