@@ -5,6 +5,10 @@ import os
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 print("将 VGG 16 卷积基实例化")
 # include_top 表示是否包含 Dense 分类器，这里我们不需要
 conv_base = VGG16(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
@@ -49,3 +53,38 @@ validation_features = np.reshape(validation_features, (1000, 4*4*512))
 test_features = np.reshape(test_features, (1000, 4*4*512))
 
 print("定义并训练 Dense 分类器")
+model = models.Sequential()
+model.add(layers.Dense(256, activation='relu', input_dim=4*4*512))
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(1, activation='sigmoid'))
+
+model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
+            loss='binary_crossentropy',
+            metrics=['acc'])
+
+history = model.fit(train_features, train_labels,
+                    epochs=30,
+                    batch_size=20,
+                    validation_data=(validation_features, validation_labels))
+print("保存模型")
+model.save('model/cats_and_dogs_small_3.h5')
+
+print("绘制结果")
+acc = history.history['acc']
+val_acc = history.history['val_acc']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(1, len(acc) + 1)
+
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.legend()
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+plt.show()
+print("模型几乎从一开始就过拟合，因为没有用数据增强，而数据增强对防止小型图像数据集的过拟合非常重要")

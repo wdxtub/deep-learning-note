@@ -55,11 +55,11 @@ print("利用批量生成器进行模型拟合（训练）")
 history = model.fit_generator(
     train_generator,
     steps_per_epoch=100,
-    epochs=100,
+    epochs=30,
     validation_data=validation_generator,
     validation_steps=50)
 print("保存模型")
-model.save('cats_and_dogs_small_2.h5')
+model.save('model/cats_and_dogs_small_2.h5')
 print("绘制训练过程中损失和精度曲线")
 acc = history.history['acc']
 val_acc = history.history['val_acc']

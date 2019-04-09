@@ -9,6 +9,9 @@
 data/
 log/
 
+# model
+*.h5
+
 # trace
 trace/
 
