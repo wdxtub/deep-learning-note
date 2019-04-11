@@ -55,7 +55,7 @@ print("利用批量生成器进行模型拟合（训练）")
 history = model.fit_generator(
     train_generator,
     steps_per_epoch=100,
-    epochs=100,
+    epochs=20,
     validation_data=validation_generator,
     validation_steps=50)
 print("保存模型")

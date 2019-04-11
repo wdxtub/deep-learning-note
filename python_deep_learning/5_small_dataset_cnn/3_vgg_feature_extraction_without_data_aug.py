@@ -34,15 +34,14 @@ def extract_features(directory, sample_count):
     i = 0
     for inputs_batch, labels_batch in generator:
         features_batch = conv_base.predict(inputs_batch)
-        start = i * batch_size
-        end = start + batch_size
-        features[start: end] = features_batch
-        labels[start: end] = labels_batch
+        features[i * batch_size: (i+1) * batch_size] = features_batch
+        labels[i * batch_size: (i+1) * batch_size] = labels_batch
         i += 1
-        if start >= sample_count:
+        if i * batch_size >= sample_count:
             break
     return features, labels
 
+print("提取特征")
 train_features, train_labels = extract_features(train_dir, 2000)
 validation_features, validation_labels = extract_features(validation_dir, 1000)
 test_features, test_labels = extract_features(test_dir, 1000)
