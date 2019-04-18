@@ -2,6 +2,7 @@ import keras
 from keras import layers
 from keras.datasets import imdb
 from keras.preprocessing import sequence
+from keras.utils import plot_model
 
 max_features = 2000
 max_len = 500
@@ -27,7 +28,10 @@ callbacks = [
         log_dir='log', # 日志写入位置
         histogram_freq=1, # 每一轮都记录激活直方图
         embeddings_freq=1, # 每一轮之后记录嵌入数据
+        embeddings_data=x_test[:100] # 这里需要添加这一行，原文没有
     )
 ]
 history = model.fit(x_train, y_train, epochs=20, batch_size=128, validation_split=0.2, callbacks=callbacks)
 print("使用 tensorboard --logdir=log 启动，访问 localhost:6006")
+print("绘制模型结构图片")
+plot_model(model, to_file='log/model.png', show_shapes=True)
