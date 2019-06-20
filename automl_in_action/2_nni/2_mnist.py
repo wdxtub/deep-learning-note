@@ -1,3 +1,5 @@
+"""A deep MNIST classifier using convolutional layers."""
+
 import argparse
 import logging
 import math
@@ -7,7 +9,7 @@ import time
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-# code from https://github.com/microsoft/nni/blob/master/examples/trials/mnist/mnist_before.py
+import nni
 
 FLAGS = None
 
@@ -18,7 +20,6 @@ class MnistNetwork(object):
     '''
     MnistNetwork is for initializing and building basic network for mnist.
     '''
-
     def __init__(self,
                  channel_1_num,
                  channel_2_num,
@@ -37,11 +38,8 @@ class MnistNetwork(object):
         self.x_dim = x_dim
         self.y_dim = y_dim
 
-        self.images = tf.placeholder(
-            tf.float32, [None, self.x_dim], name='input_x')
-        self.labels = tf.placeholder(
-            tf.float32, [None, self.y_dim], name='input_y')
-
+        self.images = tf.placeholder(tf.float32, [None, self.x_dim], name='input_x')
+        self.labels = tf.placeholder(tf.float32, [None, self.y_dim], name='input_y')
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
 
         self.train_step = None
@@ -59,14 +57,17 @@ class MnistNetwork(object):
             try:
                 input_dim = int(math.sqrt(self.x_dim))
             except:
-                print('input dim cannot be sqrt and reshape. input dim: ' + str(self.x_dim))
-                logger.debug('input dim cannot be sqrt and reshape. input dim: %s', str(self.x_dim))
+                print(
+                    'input dim cannot be sqrt and reshape. input dim: ' + str(self.x_dim))
+                logger.debug(
+                    'input dim cannot be sqrt and reshape. input dim: %s', str(self.x_dim))
                 raise
             x_image = tf.reshape(self.images, [-1, input_dim, input_dim, 1])
 
         # First convolutional layer - maps one grayscale image to 32 feature maps.
         with tf.name_scope('conv1'):
-            w_conv1 = weight_variable([self.conv_size, self.conv_size, 1, self.channel_1_num])
+            w_conv1 = weight_variable(
+                [self.conv_size, self.conv_size, 1, self.channel_1_num])
             b_conv1 = bias_variable([self.channel_1_num])
             h_conv1 = tf.nn.relu(conv2d(x_image, w_conv1) + b_conv1)
 
@@ -76,11 +77,12 @@ class MnistNetwork(object):
 
         # Second convolutional layer -- maps 32 feature maps to 64.
         with tf.name_scope('conv2'):
-            w_conv2 = weight_variable([self.conv_size, self.conv_size, self.channel_1_num, self.channel_2_num])
+            w_conv2 = weight_variable([self.conv_size, self.conv_size,
+                                       self.channel_1_num, self.channel_2_num])
             b_conv2 = bias_variable([self.channel_2_num])
             h_conv2 = tf.nn.relu(conv2d(h_pool1, w_conv2) + b_conv2)
 
-        # Second pooling layer
+        # Second pooling layer.
         with tf.name_scope('pool2'):
             h_pool2 = max_pool(h_conv2, self.pool_size)
 
@@ -88,15 +90,17 @@ class MnistNetwork(object):
         # is down to 7x7x64 feature maps -- maps this to 1024 features.
         last_dim = int(input_dim / (self.pool_size * self.pool_size))
         with tf.name_scope('fc1'):
-            w_fc1 = weight_variable([last_dim * last_dim * self.channel_2_num, self.hidden_size])
+            w_fc1 = weight_variable(
+                [last_dim * last_dim * self.channel_2_num, self.hidden_size])
             b_fc1 = bias_variable([self.hidden_size])
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, last_dim * last_dim * self.channel_2_num])
+        h_pool2_flat = tf.reshape(
+            h_pool2, [-1, last_dim * last_dim * self.channel_2_num])
         h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, w_fc1) + b_fc1)
 
         # Dropout - controls the complexity of the model, prevents co-adaptation of features.
         with tf.name_scope('dropout'):
-            h_fc1_drop = tf.nn.dropout(h_fc1, rate=self.keep_prob)
+            h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
 
         # Map the 1024 features to 10 classes, one for each digit
         with tf.name_scope('fc2'):
@@ -106,19 +110,16 @@ class MnistNetwork(object):
 
         with tf.name_scope('loss'):
             cross_entropy = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=y_conv)
-            )
-            tf.summary.scalar("loss", cross_entropy)
-
+                tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=y_conv))
         with tf.name_scope('adam_optimizer'):
-            self.train_step = tf.train.AdadeltaOptimizer(self.learning_rate).minimize(cross_entropy)
+            self.train_step = tf.train.AdamOptimizer(
+                self.learning_rate).minimize(cross_entropy)
 
         with tf.name_scope('accuracy'):
-            correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(self.labels, 1))
+            correct_prediction = tf.equal(
+                tf.argmax(y_conv, 1), tf.argmax(self.labels, 1))
             self.accuracy = tf.reduce_mean(
-                tf.cast(correct_prediction, tf.float32)
-            )
-            tf.summary.scalar('accuracy', self.accuracy)
+                tf.cast(correct_prediction, tf.float32))
 
 
 def conv2d(x_input, w_matrix):
@@ -143,18 +144,26 @@ def bias_variable(shape):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
 
+def download_mnist_retry(data_dir, max_num_retries=20):
+    """Try to download mnist dataset and avoid errors"""
+    for _ in range(max_num_retries):
+        try:
+            return input_data.read_data_sets(data_dir, one_hot=True)
+        except tf.errors.AlreadyExistsError:
+            time.sleep(1)
+    raise Exception("Failed to download MNIST.")
 
 def main(params):
     '''
     Main function, build mnist network, run and send result to NNI.
     '''
-    # Import Data
-    mnist = input_data.read_data_sets(params['data_dir'], one_hot=True)
-    print('Mnist Data Ready.')
-    logger.debug('Mnist Data Ready.')
+    # Import data
+    mnist = download_mnist_retry(params['data_dir'])
+    print('Mnist download data done.')
+    logger.debug('Mnist download data done.')
 
     # Create the model
-    # Builde the graph for the deep net
+    # Build the graph for the deep net
     mnist_network = MnistNetwork(channel_1_num=params['channel_1_num'],
                                  channel_2_num=params['channel_2_num'],
                                  conv_size=params['conv_size'],
@@ -162,34 +171,23 @@ def main(params):
                                  pool_size=params['pool_size'],
                                  learning_rate=params['learning_rate'])
     mnist_network.build_network()
-    logger.debug('Mnist Build Network Done')
+    logger.debug('Mnist build network done.')
 
     # Write log
-    graph_location = "./tensorboard"
+    graph_location = tempfile.mkdtemp()
     logger.debug('Saving graph to: %s', graph_location)
     train_writer = tf.summary.FileWriter(graph_location)
     train_writer.add_graph(tf.get_default_graph())
 
-    merged_summary = tf.summary.merge_all()
-
     test_acc = 0.0
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        print("Start: %s" % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         for i in range(params['batch_num']):
             batch = mnist.train.next_batch(params['batch_size'])
-
-            _, summary = sess.run([mnist_network.train_step, merged_summary], feed_dict={
-                mnist_network.images: batch[0],
-                mnist_network.labels: batch[1],
-                mnist_network.keep_prob: 1 - params['dropout_rate']
-            })
-
-            # mnist_network.train_step.run(feed_dict={
-            #     mnist_network.images: batch[0],
-            #     mnist_network.labels: batch[1],
-            #     mnist_network.keep_prob: 1 - params['dropout_rate']
-            # })
+            mnist_network.train_step.run(feed_dict={mnist_network.images: batch[0],
+                                                    mnist_network.labels: batch[1],
+                                                    mnist_network.keep_prob: 1 - params['dropout_rate']}
+                                        )
 
             if i % 100 == 0:
                 test_acc = mnist_network.accuracy.eval(
@@ -197,8 +195,7 @@ def main(params):
                                mnist_network.labels: mnist.test.labels,
                                mnist_network.keep_prob: 1.0})
 
-                train_writer.add_summary(summary, i)
-                print('test accuracy %g' % test_acc)
+                nni.report_intermediate_result(test_acc)
                 logger.debug('test accuracy %g', test_acc)
                 logger.debug('Pipe send intermediate result done.')
 
@@ -207,10 +204,9 @@ def main(params):
                        mnist_network.labels: mnist.test.labels,
                        mnist_network.keep_prob: 1.0})
 
-        print('Final result is %g' % test_acc)
+        nni.report_final_result(test_acc)
         logger.debug('Final result is %g', test_acc)
         logger.debug('Send final result done.')
-
 
 def get_params():
     ''' Get parameters from command line '''
@@ -229,14 +225,16 @@ def get_params():
     args, _ = parser.parse_known_args()
     return args
 
-
-# tensorboard
-# tensorboard --logdir=./calc_graph_event
-
 if __name__ == '__main__':
     try:
+        # get parameters form tuner
+        tuner_params = nni.get_next_parameter()
+        logger.debug(tuner_params)
         params = vars(get_params())
+        params.update(tuner_params)
         main(params)
     except Exception as exception:
         logger.exception(exception)
         raise
+
+# Usage:   nnictl create --config ./config.yml
