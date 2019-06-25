@@ -72,8 +72,8 @@ def time_str(now):
 def linear_ada():
 
     print("==============================================")
-    linear_start = datetime.datetime.now()
-    print("Start Train Adanet with [Linear Model] on Mnist at %s" % time_str(linear_start))
+    start = datetime.datetime.now()
+    print("Start Train Adanet with [Linear Model] on Mnist at %s" % time_str(start))
     print("- - - - - - - - - - - - - - - - - - - - - - - -")
 
 
@@ -82,7 +82,7 @@ def linear_ada():
     TRAIN_STEPS = 5000
     BATCH_SIZE = 64
 
-    model_dir = os.path.join(LOG_DIR, "linear_%s" % time_str(linear_start))
+    model_dir = os.path.join(LOG_DIR, "linear_%s" % time_str(start))
 
     config = tf.estimator.RunConfig(
         save_checkpoints_steps=50000,
@@ -113,22 +113,26 @@ def linear_ada():
     print("Accuracy:", results["accuracy"])  # Accuracy 0.9248
     print("Loss:", results["average_loss"])
 
-    linear_end = datetime.datetime.now()
-    print("Training end at %s" % time_str(linear_end))
-    print("Time Spend %s" % str(linear_end - linear_start))
+    end = datetime.datetime.now()
+    print("Training end at %s" % time_str(end))
+    print("Time Spend %s" % str(end - start))
+    # MBP 2018: 32s
+    # DELL 7490 WSL: 1m11s
     print("==============================================")
 
 
 def dnn_ada():
     print("==============================================")
-    dnn_start = datetime.datetime.now()
-    print("Start Train Adanet with [DNN Model] on Mnist at %s" % time_str(dnn_start))
+    start = datetime.datetime.now()
+    print("Start Train Adanet with [DNN Model] on Mnist at %s" % time_str(start))
     print("- - - - - - - - - - - - - - - - - - - - - - - -")
 
     LEARNING_RATE = 0.003
     TRAIN_STEPS = 5000
     BATCH_SIZE = 64
     ADANET_ITERATIONS = 2
+
+    model_dir = os.path.join(LOG_DIR, "linear_%s" % time_str(start))
 
     config = tf.estimator.RunConfig(
         save_checkpoints_steps=50000,
@@ -163,12 +167,12 @@ def dnn_ada():
     print("Accuracy:", results["accuracy"])
     print("Loss:", results["average_loss"])
 
-    dnn_end = datetime.datetime.now()
-    print("Training end at %s" % time_str(dnn_end))
-    print("Time Spend %s" % str(dnn_end - dnn_start))
+    end = datetime.datetime.now()
+    print("Training end at %s" % time_str(end))
+    print("Time Spend %s" % str(end - start))
     print("==============================================")
 
 
 if __name__ == "__main__":
-    linear_ada()
-    # dnn_ada()
+    # linear_ada()
+    dnn_ada()
