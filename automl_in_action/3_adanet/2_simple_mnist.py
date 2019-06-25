@@ -13,7 +13,10 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 LOG_DIR = 'models'
 
-(x_train, y_train), (x_test, y_test) = (tf.keras.datasets.mnist.load_data())
+# 可选数据集
+# tf.keras.datasets.mnist
+# tf.keras.datasets.fashion_mnist
+(x_train, y_train), (x_test, y_test) = (tf.keras.datasets.fashion_mnist.load_data())
 
 FEATURES_KEY = "images"
 
@@ -27,6 +30,35 @@ feature_columns = [
     tf.feature_column.numeric_column(FEATURES_KEY, shape=[28, 28, 1])
 ]
 
+
+"""
+数据对比
+
+MNIST    | Linear | DNN  | CNN
+准确率(%) | 92.48  | 95.98 | 98.72
+耗时1(s)  | 32    | 55    | 74
+耗时2(s)  | 71    | 117   | 143
+
+FASHINON | Linear | DNN  | CNN
+准确率(%) | 92.48  | 95.98 | 98.72
+耗时1(s)  | 32    | 55    | 74
+耗时2(s)  | 71    | 117   | 143
+
+
+耗时 1 = MBP 2018 15 寸 i7 2.2GHz
+耗时 2 = DELL 7490 i5 8250U 1.6Ghz
+"""
+
+# MBP 2018: 32s
+    # DELL 7490 WSL: 1m11s
+
+# Accuracy: 0.9598
+# MBP 2018: 55s
+# DELL 7490 WSL: 1m57s
+
+# Accuracy: 0.9872
+    # MBP 2018: 1m14s
+    # DELL 7490 WSL: 2m23s
 
 def generator(images, labels):
     """Returns a generator that returns image-label pairs."""
@@ -110,14 +142,13 @@ def linear_ada():
             steps=None)
     )
 
-    print("Accuracy:", results["accuracy"])  # Accuracy 0.9248
+    print("Accuracy:", results["accuracy"])
     print("Loss:", results["average_loss"])
 
     end = datetime.datetime.now()
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
-    # MBP 2018: 32s
-    # DELL 7490 WSL: 1m11s
+
     print("==============================================")
 
 
@@ -164,14 +195,12 @@ def dnn_ada():
             steps=None)
     )
 
-    print("Accuracy:", results["accuracy"])  # Accuracy: 0.9598
+    print("Accuracy:", results["accuracy"])
     print("Loss:", results["average_loss"])
 
     end = datetime.datetime.now()
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
-    # MBP 2018: 55s
-    # DELL 7490 WSL: 1m57s
     print("==============================================")
 
 
@@ -332,18 +361,17 @@ def cnn_ada():
             steps=None)
     )
 
-    print("Accuracy:", results["accuracy"])  # Accuracy: 0.9598
+    print("Accuracy:", results["accuracy"])
     print("Loss:", results["average_loss"])
 
     end = datetime.datetime.now()
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
-    # MBP 2018:
-    # DELL 7490 WSL:
+
     print("==============================================")
 
 
 if __name__ == "__main__":
-    # linear_ada()
-    # dnn_ada()
+    linear_ada()
+    dnn_ada()
     cnn_ada()
