@@ -8,6 +8,8 @@
 # data
 data/
 log/
+models/
+tensorboard/
 
 # model
 *.h5

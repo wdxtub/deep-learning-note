@@ -35,5 +35,3 @@ with tf.Session() as sess:
         _, summary = sess.run([train_op, merged_summary], feed_dict={x:train_x, y:train_y})
         summary_writer.add_summary(summary, step)
 
-# tensorboard
-# tensorboard --logdir=./calc_graph_event
