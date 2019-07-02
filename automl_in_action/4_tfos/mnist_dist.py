@@ -2,6 +2,141 @@ def print_log(worker_num, arg):
     print("{0}: {1}".format(worker_num, arg))
 
 
+def map_fun_v2(args, ctx):
+    from datetime import datetime
+    import tensorflow as tf
+    import time
+
+    worker_num = ctx.worker_num
+    job_name = ctx.job_name
+    task_index = ctx.task_index
+
+    # Parameters
+    IMAGE_PIXELS = 28
+    hidden_units = 128
+    # Fix Random Seed
+    RANDOM_SEED = 42
+
+    (x_train, y_train), (x_test, y_test) = (tf.keras.datasets.mnist.load_data())
+
+    FEATURES_KEY = "images"
+
+    NUM_CLASSES = 10
+
+    loss_reduction = tf.losses.Reduction.SUM_OVER_BATCH_SIZE
+
+    head = tf.contrib.estimator.multi_class_head(NUM_CLASSES, loss_reduction=loss_reduction)
+
+    feature_columns = [
+        tf.feature_column.numeric_column(FEATURES_KEY, shape=[28, 28, 1])
+    ]
+
+    # Get TF cluster and server instances
+    cluster, server = ctx.start_cluster_server(1, args.rdma)
+
+    def generator(images, labels):
+        """Returns a generator that returns image-label pairs."""
+
+        def _gen():
+            for image, label in zip(images, labels):
+                yield image, label
+
+        return _gen
+
+    def preprocess_image(image, label):
+        """Preprocesses an image for an `Estimator`."""
+        image = image / 255.
+        image = tf.reshape(image, [28, 28, 1])
+        features = {FEATURES_KEY: image}
+        return features, label
+
+    def input_fn(partition, training):
+        """Generate an input_fn for the Estimator."""
+
+        def _input_fn():
+            if partition == "train":
+                dataset = tf.data.Dataset.from_generator(
+                    generator(x_train, y_train), (tf.float32, tf.int32), ((28, 28), ()))
+            else:
+                dataset = tf.data.Dataset.from_generator(
+                    generator(x_test, y_test), (tf.float32, tf.int32), ((28, 28), ()))
+
+            if training:
+                dataset = dataset.shuffle(10 * args.batch_size, seed=RANDOM_SEED).repeat()
+
+            dataset = dataset.map(preprocess_image).batch(args.batch_size)
+            iterator = dataset.make_one_shot_iterator()
+            features, labels = iterator.get_next()
+            return features, labels
+
+        return _input_fn
+
+    if job_name == "ps":
+        server.join()
+    elif job_name == "worker":
+        # Assigns ops to the local worker by default
+        # 这里的日志都是看不到的
+        message = ""
+        with tf.device(tf.train.replica_device_setter(
+                worker_device="/job:worker/task:%d" % task_index,
+                cluster=cluster)):
+            print("========= Start Training")
+            LEARNING_RATE = 0.001
+            TRAIN_STEPS = 5000
+
+            logdir = ctx.absolute_path(args.model)
+
+            config = tf.estimator.RunConfig(
+                save_checkpoints_steps=50000,
+                save_summary_steps=50000,
+                tf_random_seed=RANDOM_SEED,
+                model_dir=logdir
+            )
+
+            # 先测试下线性模型
+            estimator = tf.estimator.LinearClassifier(
+                feature_columns=feature_columns,
+                n_classes=NUM_CLASSES,
+                optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
+                loss_reduction=loss_reduction,
+                config=config
+            )
+
+            results, _ = tf.estimator.train_and_evaluate(
+                estimator,
+                train_spec=tf.estimator.TrainSpec(
+                    input_fn=input_fn("train", training=True),
+                    max_steps=TRAIN_STEPS),
+                eval_spec=tf.estimator.EvalSpec(
+                    input_fn=input_fn("test", training=False),
+                    steps=None)
+            )
+
+            print("Accuracy:", results["accuracy"])
+            print("Loss:", results["average_loss"])
+            message = "Accuracy: {}; Loss: {}".format(results["accuracy"], results["average_loss"])
+            print("==============================================")
+
+        print("{} stopping MonitoredTrainingSession".format(datetime.now().isoformat()))
+
+        # WORKAROUND FOR https://github.com/tensorflow/tensorflow/issues/21745
+        # wait for all other nodes to complete (via done files)
+        done_dir = "{}/{}/done".format(ctx.absolute_path(args.model), args.mode)
+        print("Writing done file to: {}".format(done_dir))
+        tf.gfile.MakeDirs(done_dir)
+        with tf.gfile.GFile("{}/{}".format(done_dir, ctx.task_index), 'w') as done_file:
+            done_file.write("done")
+            done_file.write(message)
+
+        for i in range(60):
+            if len(tf.gfile.ListDirectory(done_dir)) < len(ctx.cluster_spec['worker']):
+                print("{} Waiting for other nodes {}".format(datetime.now().isoformat(), i))
+                time.sleep(1)
+            else:
+                print("{} All nodes done".format(datetime.now().isoformat()))
+                break
+
+
 def map_fun(args, ctx):
     from datetime import datetime
     import math
@@ -16,6 +151,7 @@ def map_fun(args, ctx):
     # Parameters
     IMAGE_PIXELS = 28
     hidden_units = 128
+
 
     # Get TF cluster and server instances
     cluster, server = ctx.start_cluster_server(1, args.rdma)
@@ -131,6 +267,7 @@ def map_fun(args, ctx):
         tf.gfile.MakeDirs(done_dir)
         with tf.gfile.GFile("{}/{}".format(done_dir, ctx.task_index), 'w') as done_file:
             done_file.write("done")
+            done_file.write("good")
 
         for i in range(60):
             if len(tf.gfile.ListDirectory(done_dir)) < len(ctx.cluster_spec['worker']):
