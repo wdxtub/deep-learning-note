@@ -1,5 +1,6 @@
 # deep-learning-note
 
+
 个人学习深度学习的笔记
 
 + 10 分 `python_deep_learning` 《Python 深度学习》，使用 py3
@@ -11,4 +12,8 @@
 + `automl_in_action` AutoML 实战，使用 pyctr
 + `tf_serving` 使用 TF Serving 的简单教程
 + `tf_profiler` 使用 TF Profiler 进行性能监控
++ `core_python` Python 核心编程（第三版）的学习笔记，使用 py3
 
+注：
+
++ py3 环境使用 python 3.7.3
