@@ -44,3 +44,13 @@ Twisted==19.2.1
 Werkzeug==0.15.5
 zope.interface==4.6.0
 ```
+
+## 略过章节
+
++ 第六章 数据库：直接使用 SQLAlchemy 即可
++ 第七章 Office 编程：用途较小，且限定 windows 平台
++ 第八章 扩展 Python：暂时不需要涉及这么底层的操作
++ 第十一章 Django：目前不需要用这个框架，以 Flask 为主（后续可以基于这个来学习 django，不过太老了，目前 django 已不支持 py2）
++ 第十二章 Google App Engine：众所周知的原因
++ 第十三章 Web 服务：众所周知的原因 Twitter
++ 第十四章 文本处理：过于简单

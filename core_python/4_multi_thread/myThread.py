@@ -10,10 +10,11 @@ class MyThread(threading.Thread):
         self.name = name
         self.func = func
         self.args = args
+        self.res = -1
 
     def run(self):
         print('starting', self.name, 'at:', ctime())
-        self.func(*self.args)
+        self.res = self.func(*self.args)
         print(self.name, 'finished at:', ctime())
 
     def getResult(self):
