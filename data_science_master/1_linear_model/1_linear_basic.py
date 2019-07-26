@@ -34,6 +34,7 @@ def evaluateModel(model, testData, features, labels):
     score = model.score(testData[features], testData[labels])
     return error, score
 
+
 def trainModel(trainData, features, labels):
     """
     利用训练数据，估计模型参数
@@ -55,6 +56,7 @@ def trainModel(trainData, features, labels):
     # 训练模型，估计模型参数
     model.fit(trainData[features], trainData[labels])
     return model
+
 
 def linearModel(data):
     features = ["x"]
@@ -80,6 +82,7 @@ def readData(path):
     """
     data = pd.read_csv(path)
     return data
+
 
 if __name__ == "__main__":
     data = readData("data/simple_example.csv")

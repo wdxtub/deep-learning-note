@@ -9,6 +9,7 @@ import statsmodels.api as sm
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import pandas as pd
 
+
 def modelSummary(re):
     """
     分析线性回归模型的统计性质
@@ -25,6 +26,7 @@ def modelSummary(re):
     # 用f test检测a=1, b=0同时成立的显著性
     print("检测假设x的系数等于1和const的系数等于0同时成立：")
     print(re.f_test(["x=1", "const=0"]))
+
 
 def trainModel(X, Y):
     """

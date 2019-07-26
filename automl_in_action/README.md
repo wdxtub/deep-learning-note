@@ -1,6 +1,6 @@
 # AutoML in Action
 
-使用 pyctr 环境
+注意：使用 pyctr 环境。
 
 ## 版本
 
