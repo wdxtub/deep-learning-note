@@ -1,0 +1,1 @@
+https://github.com/hguomin/deep-learning-from-scratch/blob/master/ch06/batch_norm_test.py
