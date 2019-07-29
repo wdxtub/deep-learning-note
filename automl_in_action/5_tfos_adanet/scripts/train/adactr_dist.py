@@ -126,6 +126,7 @@ def map_fun(args, ctx):
             TRAIN_STEPS = 5000
             ADANET_ITERATIONS = 3
 
+            # 目前来看效果不是很好，还不如线性
             logdir = ctx.absolute_path(args.log_dir)
 
             config = tf.estimator.RunConfig(
@@ -148,6 +149,10 @@ def map_fun(args, ctx):
             estimator = adanet.Estimator(
                 head=head,
                 subnetwork_generator=simple_dnn.Generator(
+                    layer_size=128,
+                    initial_num_layers=3,
+                    learn_mixture_weights=True,
+                    dropout=0.2,
                     feature_columns=feature_columns,
                     optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
                     seed=RANDOM_SEED),
