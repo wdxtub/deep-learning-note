@@ -32,7 +32,7 @@ feature_columns = [
 
 
 """
-数据对比
+数据对比 Linear 是 Baseline
 
 MNIST    | Linear | DNN  | CNN
 准确率(%) | 92.48  | 95.98 | 98.72

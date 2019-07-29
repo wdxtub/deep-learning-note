@@ -1,3 +1,6 @@
+import adanet
+from adanet.examples import simple_dnn
+
 def print_log(worker_num, arg):
     print("{0}: {1}".format(worker_num, arg))
 
@@ -81,8 +84,10 @@ def map_fun_v2(args, ctx):
                 worker_device="/job:worker/task:%d" % task_index,
                 cluster=cluster)):
             print("========= Start Training")
-            LEARNING_RATE = 0.001
+            LEARNING_RATE = 0.003
             TRAIN_STEPS = 5000
+            BATCH_SIZE = 64
+            ADANET_ITERATIONS = 2
 
             logdir = ctx.absolute_path(args.model)
 
@@ -94,11 +99,24 @@ def map_fun_v2(args, ctx):
             )
 
             # 先测试下线性模型
-            estimator = tf.estimator.LinearClassifier(
-                feature_columns=feature_columns,
-                n_classes=NUM_CLASSES,
-                optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
-                loss_reduction=loss_reduction,
+            # estimator = tf.estimator.LinearClassifier(
+            #     feature_columns=feature_columns,
+            #     n_classes=NUM_CLASSES,
+            #     optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
+            #     loss_reduction=loss_reduction,
+            #     config=config
+            # )
+
+            estimator = adanet.Estimator(
+                head=head,
+                subnetwork_generator=simple_dnn.Generator(
+                    feature_columns=feature_columns,
+                    optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
+                    seed=RANDOM_SEED),
+                max_iteration_steps=TRAIN_STEPS // ADANET_ITERATIONS,
+                evaluator=adanet.Evaluator(
+                    input_fn=input_fn("train", training=False),
+                    steps=None),
                 config=config
             )
 
