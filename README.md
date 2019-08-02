@@ -15,6 +15,12 @@
 + `tf_profiler` 使用 TF Profiler 进行性能监控
 + `core_python` Python 核心编程（第三版）的学习笔记，使用 py3
 
+课程
+
++ `cs20` 斯坦福 TF 课程，使用 pyctr
+
+
 注：
 
 + py3 环境使用 python 3.7.3
++ pyctr 环境使用 pythno 3.6.x
