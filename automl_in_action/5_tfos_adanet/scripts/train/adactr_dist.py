@@ -123,8 +123,8 @@ def map_fun(args, ctx):
                 cluster=cluster)):
             print("========= Start Training")
             LEARNING_RATE = 0.003
-            TRAIN_STEPS = 5000
-            ADANET_ITERATIONS = 3
+            TRAIN_STEPS = 1000
+            ADANET_ITERATIONS = 2
 
             # 目前来看效果不是很好，还不如线性
             logdir = ctx.absolute_path(args.log_dir)
@@ -151,14 +151,13 @@ def map_fun(args, ctx):
                 subnetwork_generator=simple_dnn.Generator(
                     layer_size=128,
                     initial_num_layers=3,
-                    learn_mixture_weights=True,
                     dropout=0.2,
                     feature_columns=feature_columns,
                     optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
                     seed=RANDOM_SEED),
                 max_iteration_steps=TRAIN_STEPS // ADANET_ITERATIONS,
                 evaluator=adanet.Evaluator(
-                    input_fn=input_fn("test"),
+                    input_fn=input_fn("train"),
                     steps=None
                 ),
                 config=config
@@ -177,6 +176,9 @@ def map_fun(args, ctx):
             print("Accuracy:", results["accuracy"])
             print("Loss:", results["average_loss"])
             message = "Accuracy: {}; Loss: {}".format(results["accuracy"], results["average_loss"])
+            arch = results["architecture/adanet/ensembles"]
+            summary_proto = tf.summary.Summary.FromString(arch)
+            arch_result = summary_proto.value[0].tensor.string_val[0]
             print("==============================================")
 
 
@@ -189,6 +191,7 @@ def map_fun(args, ctx):
     tf.gfile.MakeDirs(done_dir)
     with tf.gfile.GFile("{}/{}".format(done_dir, ctx.task_index), 'w') as done_file:
         done_file.write(message)
+        done_file.write(arch_result)
 
     for i in range(30):
         if len(tf.gfile.ListDirectory(done_dir)) < len(ctx.cluster_spec['worker']):

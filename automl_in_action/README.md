@@ -30,3 +30,11 @@ Spark 版本 2.4.3
 + autoKeras 0.4.0
 + nni 0.8
 + adaNet 0.6.2
+
+## Notes
+
+One use-case that has worked for us at Google, has been to take a production model's TensorFlow code, convert it to into an adanet.subnetwork.Builder, and adaptively grow it into an ensemble. In many cases, this has given significant performance improvements.
+
+### Simple DNN
+
+creates two candidate fully-connected neural networks at each iteration with the same width, but one an additional hidden layer. To make our generator adaptive, each subnetwork will have at least the same number of hidden layers as the most recently added subnetwork to the previous_ensemble.
