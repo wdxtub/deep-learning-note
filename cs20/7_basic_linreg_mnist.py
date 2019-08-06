@@ -15,6 +15,7 @@ n_test = 10000
 mnist_folder = 'data/mnist'
 # 我已经下载过，就不用再次下载
 #utils.download_mnist(mnist_folder)
+# 这里把二维的图片展开成一维的向量
 train, val, test = utils.read_mnist(mnist_folder, flatten=True)
 
 # Step 2: 创建 dataset 和 iterator
@@ -37,12 +38,13 @@ test_init = iterator.make_initializer(test_data)  # initializer for test_data
 # b is initialized to 0
 # shape of w depends on the dimension of X and Y so that Y = tf.matmul(X, w)
 # shape of b depends on Y
-w = tf.get_variable(name='weights', shape=(784, 10), initializer=tf.random_normal_initializer(0, 0.01))
-b = tf.get_variable(name='bias', shape=(1, 10), initializer=tf.zeros_initializer())
+w = tf.compat.v1.get_variable(name='weights', shape=(784, 10), initializer=tf.random_normal_initializer(0, 0.01))
+b = tf.compat.v1.get_variable(name='bias', shape=(1, 10), initializer=tf.zeros_initializer())
 
 # Step 4: 构造模型
 # the model that returns the logits.
 # this logits will be later passed through softmax layer
+# 这里的 logits 就是神经网络的一层输出，后面会连接 softmax 用于多分类
 logits = tf.matmul(img, w) + b
 
 # Step 5: 确定损失函数
@@ -52,17 +54,17 @@ loss = tf.reduce_mean(entropy, name='loss')  # computes the mean over all the ex
 
 # Step 6: 确定训练步骤
 # using gradient descent with learning rate of 0.01 to minimize loss
-optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate).minimize(loss)
 
 # Step 7: 用测试集计算准确率
 preds = tf.nn.softmax(logits)
 correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(label, 1))
 accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
 
-writer = tf.summary.FileWriter('.data/graphs/logreg', tf.get_default_graph())
-with tf.Session() as sess:
+writer = tf.compat.v1.summary.FileWriter('data/graphs/logreg', tf.compat.v1.get_default_graph())
+with tf.compat.v1.Session() as sess:
     start_time = time.time()
-    sess.run(tf.global_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
 
     # train the model n_epochs times
     for i in range(n_epochs):
