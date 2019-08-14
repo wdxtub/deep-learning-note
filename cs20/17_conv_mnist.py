@@ -2,9 +2,7 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import time
-
 import tensorflow as tf
-
 import utils
 
 
@@ -12,12 +10,12 @@ def conv_relu(inputs, filters, k_size, stride, padding, scope_name):
     '''
     A method that does convolution + relu on inputs
     '''
-    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
+    with tf.compat.v1.variable_scope(scope_name, reuse=tf.compat.v1.AUTO_REUSE) as scope:
         in_channels = inputs.shape[-1]
-        kernel = tf.get_variable('kernel',
+        kernel = tf.compat.v1.get_variable('kernel',
                                  [k_size, k_size, in_channels, filters],
                                  initializer=tf.truncated_normal_initializer())
-        biases = tf.get_variable('biases',
+        biases = tf.compat.v1.get_variable('biases',
                                  [filters],
                                  initializer=tf.random_normal_initializer())
         conv = tf.nn.conv2d(inputs, kernel, strides=[1, stride, stride, 1], padding=padding)
@@ -26,8 +24,8 @@ def conv_relu(inputs, filters, k_size, stride, padding, scope_name):
 
 def maxpool(inputs, ksize, stride, padding='VALID', scope_name='pool'):
     '''A method that does max pooling on inputs'''
-    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
-        pool = tf.nn.max_pool(inputs,
+    with tf.compat.v1.variable_scope(scope_name, reuse=tf.compat.v1.AUTO_REUSE) as scope:
+        pool = tf.nn.max_pool2d(inputs,
                               ksize=[1, ksize, ksize, 1],
                               strides=[1, stride, stride, 1],
                               padding=padding)
@@ -38,11 +36,11 @@ def fully_connected(inputs, out_dim, scope_name='fc'):
     '''
     A fully connected linear layer on inputs
     '''
-    with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE) as scope:
+    with tf.compat.v1.variable_scope(scope_name, reuse=tf.compat.v1.AUTO_REUSE) as scope:
         in_dim = inputs.shape[-1]
-        w = tf.get_variable('weights', [in_dim, out_dim],
+        w = tf.compat.v1.get_variable('weights', [in_dim, out_dim],
                             initializer=tf.truncated_normal_initializer())
-        b = tf.get_variable('biases', [out_dim],
+        b = tf.compat.v1.get_variable('biases', [out_dim],
                             initializer=tf.constant_initializer(0.0))
         out = tf.matmul(inputs, w) + b
     return out
@@ -63,8 +61,9 @@ class ConvNet(object):
     def get_data(self):
         with tf.name_scope('data'):
             train_data, test_data = utils.get_mnist_dataset(self.batch_size)
-            iterator = tf.data.Iterator.from_structure(train_data.output_types,
-                                                       train_data.output_shapes)
+            iterator = tf.compat.v1.data.Iterator.from_structure(
+                tf.compat.v1.data.get_output_types(train_data),
+                tf.compat.v1.data.get_output_shapes(train_data))
             img, self.label = iterator.get_next()
             self.img = tf.reshape(img, shape=[-1, 28, 28, 1])
             # reshape the image to make it work with tf.nn.conv2d
@@ -90,7 +89,7 @@ class ConvNet(object):
         feature_dim = pool2.shape[1] * pool2.shape[2] * pool2.shape[3]
         pool2 = tf.reshape(pool2, [-1, feature_dim])
         fc = fully_connected(pool2, 1024, 'fc')
-        dropout = tf.nn.dropout(tf.nn.relu(fc), self.keep_prob, name='relu_dropout')
+        dropout = tf.nn.dropout(tf.nn.relu(fc), rate=1-self.keep_prob, name='relu_dropout')
         self.logits = fully_connected(dropout, self.n_classes, 'logits')
 
     def loss(self):
@@ -109,18 +108,17 @@ class ConvNet(object):
         Define training op
         using Adam Gradient Descent to minimize cost
         '''
-        self.opt = tf.train.AdamOptimizer(self.lr).minimize(self.loss,
+        self.opt = tf.compat.v1.train.AdamOptimizer(self.lr).minimize(self.loss,
                                                             global_step=self.gstep)
-
     def summary(self):
         '''
         Create summaries to write on TensorBoard
         '''
         with tf.name_scope('summaries'):
-            tf.summary.scalar('loss', self.loss)
-            tf.summary.scalar('accuracy', self.accuracy)
-            tf.summary.histogram('histogram loss', self.loss)
-            self.summary_op = tf.summary.merge_all()
+            tf.compat.v1.summary.scalar('loss', self.loss)
+            tf.compat.v1.summary.scalar('accuracy', self.accuracy)
+            tf.compat.v1.summary.histogram('histogram loss', self.loss)
+            self.summary_op = tf.compat.v1.summary.merge_all()
 
     def eval(self):
         '''
@@ -159,7 +157,7 @@ class ConvNet(object):
                 n_batches += 1
         except tf.errors.OutOfRangeError:
             pass
-        saver.save(sess, 'checkpoints/convnet_mnist/mnist-convnet', step)
+        saver.save(sess, 'data/checkpoints/convnet_mnist/mnist-convnet', step)
         print('Average loss at epoch {0}: {1}'.format(epoch, total_loss / n_batches))
         print('Took: {0} seconds'.format(time.time() - start_time))
         return step
@@ -184,14 +182,14 @@ class ConvNet(object):
         '''
         The train function alternates between training one epoch and evaluating
         '''
-        utils.safe_mkdir('checkpoints')
-        utils.safe_mkdir('checkpoints/convnet_mnist')
-        writer = tf.summary.FileWriter('./graphs/convnet', tf.get_default_graph())
+        utils.safe_mkdir('data/checkpoints')
+        utils.safe_mkdir('data/checkpoints/convnet_mnist')
+        writer = tf.compat.v1.summary.FileWriter('./data/graphs/convnet', tf.compat.v1.get_default_graph())
 
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            saver = tf.train.Saver()
-            ckpt = tf.train.get_checkpoint_state(os.path.dirname('checkpoints/convnet_mnist/checkpoint'))
+        with tf.compat.v1.Session() as sess:
+            sess.run(tf.compat.v1.global_variables_initializer())
+            saver = tf.compat.v1.train.Saver()
+            ckpt = tf.train.get_checkpoint_state(os.path.dirname('data/checkpoints/convnet_mnist/checkpoint'))
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
 
