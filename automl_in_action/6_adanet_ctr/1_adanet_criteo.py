@@ -1,5 +1,4 @@
 import adanet
-# 这里默认的 dnn 过于简单，无法得到比较好的结果
 from adanet.examples import simple_dnn
 import tensorflow as tf
 import os
@@ -7,9 +6,10 @@ import datetime
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+# 根据 Adanet 论文的参数进行设置
 
 EPOCH = 10
-BATCH_SIZE = 64
+BATCH_SIZE = 100
 RANDOM_SEED = 42
 NUM_CLASSES = 2
 
@@ -32,6 +32,19 @@ DNN1 = loss SUM_BY_NONZERO_WEIGHTS
 
 
 耗时 1 = MBP 2018 15 寸 i7 2.2GHz
+
+重要参数有 4 个
+B 是层数 125, 256, 512
+n 是学习率 0.0001 或 0.1
+
+
+Train Step 均为 2000
+125 + 0.0001 + 30 轮 = 0.7306 / 0.587
+512 + 0.1 + 20 轮 = 0.754625 / 0.50
+512 + 0.0001 + 20 轮 = 0.7193 / 0.586
+512 + 0.0001 + 30 轮 = 0.6437 / 0.55
+512 + 0.001 + 20 轮 = 0.7403 / 0.579
+256 + 0.001 + 20 轮 = 0.7529 / 0.5538
 """
 
 '''
@@ -147,9 +160,10 @@ def dnn_ada():
     print("Start Train Adanet with [DNN Model] on Criteo at %s" % time_str(start))
     print("- - - - - - - - - - - - - - - - - - - - - - - -")
 
-    LEARNING_RATE = 0.003
-    TRAIN_STEPS = 15000
-    ADANET_ITERATIONS = 20
+    # 根据论文参数调整
+    LEARNING_RATE = 0.0001
+    TRAIN_STEPS = 2000
+    ADANET_ITERATIONS = 30
 
     model_dir = os.path.join(LOG_DIR, "dnn_%s" % time_str(start))
 
@@ -160,10 +174,12 @@ def dnn_ada():
         model_dir=model_dir
     )
 
+    # layer size 125 256 512
     estimator = adanet.Estimator(
         head=head,
         subnetwork_generator=simple_dnn.Generator(
             feature_columns=feature_columns,
+            layer_size=512,
             optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
             seed=RANDOM_SEED),
         max_iteration_steps=TRAIN_STEPS // ADANET_ITERATIONS,
@@ -256,5 +272,5 @@ def ensemble_ada():
 
 if __name__ == "__main__":
     # linear_ada()
-    # dnn_ada()
-    ensemble_ada()
+    dnn_ada()
+    # ensemble_ada()
