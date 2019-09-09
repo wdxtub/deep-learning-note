@@ -8,15 +8,16 @@ from sklearn.model_selection import train_test_split
 
 # 根据 Adanet 论文的参数进行设置
 
-EPOCH = 10
 BATCH_SIZE = 100
 RANDOM_SEED = 42
 NUM_CLASSES = 2
 
 LOG_DIR = 'models'
+RESULT_DIR = 'results'
 
 # tf.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+os.environ["CUDA_VISIBLE_DEVICES"] = 0
 
 '''
 """
@@ -38,16 +39,29 @@ B 是层数 125, 256, 512
 n 是学习率 0.0001 或 0.1
 
 
-Train Step 均为 2000
+Train Step 均为 2000, SUM_OVER_NONE_ZERO_WEIGHTS
 125 + 0.0001 + 30 轮 = 0.7306 / 0.587
 512 + 0.1 + 20 轮 = 0.754625 / 0.50
 512 + 0.0001 + 20 轮 = 0.7193 / 0.586
 512 + 0.0001 + 30 轮 = 0.6437 / 0.55
 512 + 0.001 + 20 轮 = 0.7403 / 0.579
 256 + 0.001 + 20 轮 = 0.7529 / 0.5538
+
+Train Step 均为 2000, SUM_OVER_BATCH_SIZE
+512 + 0.1 + 20 轮 = 0.7465 / 0.597
+512 + 0.0001 + 30 轮 = 0.5978 / 0.5637 
+512 + 0.001 + 30 轮 = 
+256 + 0.001 + 20 轮 = 
+
 """
 
 '''
+LR = 0.001
+LS = 512
+TRAIN_STEPS = 2000
+ADANET_ITERATIONS = 30
+
+
 
 # 这里要使用 dict 来包住 features，不然会被合成一个向量，后续无法处理
 def df_to_dataset(dataframe, features, shuffle=True):
@@ -76,7 +90,7 @@ data[dense_features] = data[dense_features].fillna(0, )
 # 设定 feature_columns
 feature_columns = [tf.feature_column.numeric_column(name) for name in dense_features]
 
-loss_reduction = tf.losses.Reduction.SUM_BY_NONZERO_WEIGHTS
+loss_reduction = tf.losses.Reduction.SUM_OVER_BATCH_SIZE
 # 注：这里用 binary 会提示 Trapezoidal rule is known to produce incorrect PR-AUCs
 head = tf.contrib.estimator.binary_classification_head(loss_reduction=loss_reduction)
 
@@ -161,11 +175,10 @@ def dnn_ada():
     print("- - - - - - - - - - - - - - - - - - - - - - - -")
 
     # 根据论文参数调整
-    LEARNING_RATE = 0.0001
-    TRAIN_STEPS = 2000
-    ADANET_ITERATIONS = 30
+    LEARNING_RATE = LR
 
     model_dir = os.path.join(LOG_DIR, "dnn_%s" % time_str(start))
+    result_file = os.path.join(RESULT_DIR, "dnn_%s" % time_str(start))
 
     config = tf.estimator.RunConfig(
         save_checkpoints_steps=50000,
@@ -179,7 +192,7 @@ def dnn_ada():
         head=head,
         subnetwork_generator=simple_dnn.Generator(
             feature_columns=feature_columns,
-            layer_size=512,
+            layer_size=LS,
             optimizer=tf.train.RMSPropOptimizer(learning_rate=LEARNING_RATE),
             seed=RANDOM_SEED),
         max_iteration_steps=TRAIN_STEPS // ADANET_ITERATIONS,
@@ -207,6 +220,18 @@ def dnn_ada():
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
     print("==============================================")
+    with open('result/{}.txt'.format(result_file), 'w') as f:
+        f.write('Train Configs:\n')
+        f.write('[Layer Size] {}\n'.format(LS))
+        f.write('[Learning Rate] {}\n'.format(LR))
+        f.write('[BATCH SIZE] {}\n'.format(BATCH_SIZE))
+        f.write('[Train Step] {}\n'.format(TRAIN_STEPS))
+        f.write('[Adanet Iteration] {}\n'.format(ADANET_ITERATIONS))
+        f.write('\nResults:\n')
+        f.write('[Accurary] {}\n'.format(results["accuracy"]))
+        f.write('[AUC] {}\n'.format(results["auc"]))
+        f.write('[Loss] {}\n'.format(results["average_loss"]))
+        f.write('[Time Spend] {}\n'.format(str(end - start)))
 
 
 def ensemble_ada():
@@ -268,6 +293,8 @@ def ensemble_ada():
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
     print("==============================================")
+    # 写入到结果文件
+
 
 
 if __name__ == "__main__":
