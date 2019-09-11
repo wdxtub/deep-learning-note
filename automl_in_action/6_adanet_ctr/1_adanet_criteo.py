@@ -17,7 +17,12 @@ RESULT_DIR = 'results'
 
 # tf.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = 0
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+
+LR = 0.001
+LS = 512
+TRAIN_STEPS = 2000
+ADANET_ITERATIONS = 30
 
 '''
 """
@@ -56,10 +61,7 @@ Train Step 均为 2000, SUM_OVER_BATCH_SIZE
 """
 
 '''
-LR = 0.001
-LS = 512
-TRAIN_STEPS = 2000
-ADANET_ITERATIONS = 30
+
 
 
 
