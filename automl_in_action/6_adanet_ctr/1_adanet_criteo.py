@@ -55,15 +55,15 @@ Train Step 均为 2000, SUM_OVER_NONE_ZERO_WEIGHTS
 Train Step 均为 2000, SUM_OVER_BATCH_SIZE
 512 + 0.1 + 20 轮 = 0.7465 / 0.597
 512 + 0.0001 + 30 轮 = 0.5978 / 0.5637 
-512 + 0.001 + 30 轮 = 
-256 + 0.001 + 20 轮 = 
+
+512 + 0.01 + 30 轮 = 0.7546 / 0.6498 (2019.09.20) Test 数据（需要与 Train 进行对比）
+512 + 0.001 + 30 轮 = 0.7143 / 0.6165 
+
+
 
 """
 
 '''
-
-
-
 
 # 这里要使用 dict 来包住 features，不然会被合成一个向量，后续无法处理
 def df_to_dataset(dataframe, features, shuffle=True):
@@ -159,6 +159,7 @@ def linear_ada():
             steps=None)
     )
 
+
     print("Accuracy:", results["accuracy"])
     print("AUC", results["auc"])
     print("Loss:", results["average_loss"])
@@ -181,6 +182,8 @@ def dnn_ada():
 
     model_dir = os.path.join(LOG_DIR, "dnn_%s" % time_str(start))
     result_file = os.path.join(RESULT_DIR, "dnn_%s" % time_str(start))
+    test_file = os.path.join(RESULT_DIR, "test_%s" % time_str(start))
+    pred_file = os.path.join(RESULT_DIR, "pred_%s" % time_str(start))
 
     config = tf.estimator.RunConfig(
         save_checkpoints_steps=50000,
@@ -218,6 +221,10 @@ def dnn_ada():
     print("AUC", results["auc"])
     print("Loss:", results["average_loss"])
 
+    # 重新获取评测结果
+    train_spec = estimator.evaluate(input_fn=input_fn("train"))
+    test_spec = estimator.evaluate(input_fn=input_fn("test"))
+
     end = datetime.datetime.now()
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
@@ -234,6 +241,21 @@ def dnn_ada():
         f.write('[AUC] {}\n'.format(results["auc"]))
         f.write('[Loss] {}\n'.format(results["average_loss"]))
         f.write('[Time Spend] {}\n'.format(str(end - start)))
+        f.write('[Train Spec] {}\n'.format(str(train_spec)))
+        f.write('[Test Spec] {}\n'.format(str(test_spec)))
+
+    # 写入测试集
+    print("export test data")
+    test.to_csv('result/{}.txt'.format(test_file))
+
+    # 进行预测
+    predictions = estimator.predict(input_fn=input_fn("test"))
+    # 写入预测集
+    with open('result/{}.txt'.format(pred_file), 'w') as f:
+        for pred in predictions:
+            f.write(str(pred))
+            f.write('\n')
+
 
 
 def ensemble_ada():
