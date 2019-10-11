@@ -170,15 +170,16 @@ def map_fun(args, ctx):
                     max_steps=TRAIN_STEPS),
                 eval_spec=tf.estimator.EvalSpec(
                     input_fn=input_fn("test"),
-                    steps=None)
+                    steps=100)
             )
 
             print("Accuracy:", results["accuracy"])
             print("Loss:", results["average_loss"])
             message = "Accuracy: {}; Loss: {}".format(results["accuracy"], results["average_loss"])
-            arch = results["architecture/adanet/ensembles"]
-            summary_proto = tf.summary.Summary.FromString(arch)
-            arch_result = summary_proto.value[0].tensor.string_val[0]
+            # adanet0.3.0 不兼容
+            #arch = results["architecture/adanet/ensembles"]
+            #summary_proto = tf.summary.Summary.FromString(arch)
+            #arch_result = summary_proto.value[0].tensor.string_val[0]
             print("==============================================")
 
 
@@ -191,7 +192,8 @@ def map_fun(args, ctx):
     tf.gfile.MakeDirs(done_dir)
     with tf.gfile.GFile("{}/{}".format(done_dir, ctx.task_index), 'w') as done_file:
         done_file.write(message)
-        done_file.write(arch_result)
+        # adanet 0.3.0 不兼容
+        # done_file.write(arch_result)
 
     for i in range(30):
         if len(tf.gfile.ListDirectory(done_dir)) < len(ctx.cluster_spec['worker']):

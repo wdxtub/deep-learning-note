@@ -59,8 +59,6 @@ Train Step 均为 2000, SUM_OVER_BATCH_SIZE
 512 + 0.01 + 30 轮 = 0.7546 / 0.6498 (2019.09.20) Test 数据（需要与 Train 进行对比）
 512 + 0.001 + 30 轮 = 0.7143 / 0.6165 
 
-
-
 """
 
 '''
@@ -101,12 +99,13 @@ train, test = train_test_split(data, test_size=0.2)
 
 # tf.enable_eager_execution()
 
-
 def input_fn(mode):
     """Generate an input_fn for the Estimator."""
     def _input_fn():
         if mode == 'train':
             ds = df_to_dataset(train, dense_features)
+        elif mode == 'valid':
+            ds = df_to_dataset(train, dense_features, shuffle=False)
         elif mode == 'test':
             ds = df_to_dataset(test, dense_features, shuffle=False)
 
@@ -182,8 +181,10 @@ def dnn_ada():
 
     model_dir = os.path.join(LOG_DIR, "dnn_%s" % time_str(start))
     result_file = os.path.join(RESULT_DIR, "dnn_%s" % time_str(start))
+    valid_file = os.path.join(RESULT_DIR, "valid_%s" % time_str(start))
     test_file = os.path.join(RESULT_DIR, "test_%s" % time_str(start))
-    pred_file = os.path.join(RESULT_DIR, "pred_%s" % time_str(start))
+    tpred_file = os.path.join(RESULT_DIR, "tpred_%s" % time_str(start))
+    vpred_file = os.path.join(RESULT_DIR, "vpred_%s" % time_str(start))
 
     config = tf.estimator.RunConfig(
         save_checkpoints_steps=50000,
@@ -229,7 +230,7 @@ def dnn_ada():
     print("Training end at %s" % time_str(end))
     print("Time Spend %s" % str(end - start))
     print("==============================================")
-    with open('result/{}.txt'.format(result_file), 'w') as f:
+    with open('{}.txt'.format(result_file), 'w') as f:
         f.write('Train Configs:\n')
         f.write('[Layer Size] {}\n'.format(LS))
         f.write('[Learning Rate] {}\n'.format(LR))
@@ -246,12 +247,22 @@ def dnn_ada():
 
     # 写入测试集
     print("export test data")
-    test.to_csv('result/{}.txt'.format(test_file))
+    test.to_csv('{}.txt'.format(test_file))
+    print("export train data")
+    train.to_csv('{}.txt'.format(valid_file))
 
     # 进行预测
     predictions = estimator.predict(input_fn=input_fn("test"))
     # 写入预测集
-    with open('result/{}.txt'.format(pred_file), 'w') as f:
+    with open('{}.txt'.format(tpred_file), 'w') as f:
+        for pred in predictions:
+            f.write(str(pred))
+            f.write('\n')
+
+    # 进行预测并写入预测集
+    predictions = estimator.predict(input_fn=input_fn("valid"))
+    # 写入预测集
+    with open('{}.txt'.format(vpred_file), 'w') as f:
         for pred in predictions:
             f.write(str(pred))
             f.write('\n')
