@@ -12,10 +12,11 @@
 + 5 分 `deep_learning_intro` 《Tensorflow 入门与实战》，使用 py3
 + 6 分 `data_science_master` 《精通数据科学》 注：使用 py2
 + 7 分 `core_python` Python 核心编程（第三版）的学习笔记，使用 py3
++ `d2l` 动手学深度学习，使用 torch
 
 ## 项目
 
-+ `chatbot` 聊天机器人，使用 py3
++ `nlp_projects` 各类 nlp 项目，使用 py3
 + `automl_in_action` AutoML 实战，使用 pyctr
 + `tf_serving` 使用 TF Serving 的简单教程，使用 py3
 + `tf_profiler` 使用 TF Profiler 进行性能监控，使用 py36
@@ -24,6 +25,7 @@
 ## 课程
 
 + `cs20` 斯坦福 TF 课程，使用 pyctr
++ `cs230` 斯坦福 DL 课程，使用 pyctr
 
 
 注：
@@ -31,3 +33,4 @@
 + py3 环境使用 python 3.7.3
 + pyctr 环境使用 python 3.6.8，tf 1.14.0
 + py36 环境使用 python 3.6.8，tf 1.7.0
++ torch 环境使用 python 3.6.8, torch 1.3.0, torchvision 0.4.1
