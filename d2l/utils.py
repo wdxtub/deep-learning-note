@@ -62,7 +62,16 @@ class FlattenLayer(nn.Module):
 def evaluate_accuracy(data_iter, net):
     acc_sum, n = 0.0, 0
     for X, y in data_iter:
-        acc_sum += (net(X).argmax(dim=1) == y).float().sum().item()
+        if isinstance(net, torch.nn.Module):
+            net.eval() # 评估模式，会关闭 dropout
+            acc_sum += (net(X).argmax(dim=1) == y).float().sum().item()
+            net.train() # 改回训练模式
+        else:
+            # 如果是自定义的模型
+            if('is_training' in net.__code__.co_varnames):
+                acc_sum += (net(X, is_training=False).argmax(dim=1) == y).float().sum().item()
+            else:
+                acc_sum += (net(X).argmax(dim=1) == y).float().sum().item()
         n += y.shape[0]
     return acc_sum / n
 
@@ -93,3 +102,13 @@ def train_softmax(net, train_iter, test_iter, loss, num_epochs, batch_size, para
         test_acc = evaluate_accuracy(test_iter, net)
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f' % (epoch + 1, train_l_sum / n, train_acc_sum / n, test_acc))
 
+
+# 绘制图像
+def semilogy(x_vals, y_vals, x_label, y_label, x2_vals=None, y2_vals=None, legend=None):
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.semilogy(x_vals, y_vals)
+    if x2_vals and y2_vals:
+        plt.semilogy(x2_vals, y2_vals, linestyle=':')
+        plt.legend(legend)
+    plt.show()
