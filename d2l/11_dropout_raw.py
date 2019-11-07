@@ -47,24 +47,17 @@ def net(X, is_training=True):
 
 print('获取和读取数据')
 batch_size = 256
-num_worker = 4
-mnist_train = torchvision.datasets.FashionMNIST(root='./data',
-                                                train=True,
-                                                download=True,
-                                                transform=transforms.ToTensor())
-mnist_test = torchvision.datasets.FashionMNIST(root='./data',
-                                               train=False,
-                                               download=True,
-                                               transform=transforms.ToTensor())
-train_iter = Data.DataLoader(mnist_train,
-                             batch_size=batch_size,
-                             shuffle=True,
-                             num_workers=num_worker)
-test_iter = Data.DataLoader(mnist_test,
-                            batch_size=batch_size,
-                            shuffle=False,
-                            num_workers=num_worker)
+train_iter, test_iter = utils.load_data_fashion_mnist(batch_size)
 
 num_epochs, lr, batch_size = 5, 100.0, 256 # 这里学习率这么大，是因为我们自己实现的时候没有除以 batchsize
 loss = torch.nn.CrossEntropyLoss()
 utils.train_softmax(net, train_iter, test_iter, loss, num_epochs, batch_size, params, lr)
+
+'''
+获取和读取数据
+epoch 1, loss 0.0046, train acc 0.553, test acc 0.737
+epoch 2, loss 0.0023, train acc 0.780, test acc 0.785
+epoch 3, loss 0.0019, train acc 0.821, test acc 0.800
+epoch 4, loss 0.0018, train acc 0.837, test acc 0.845
+epoch 5, loss 0.0016, train acc 0.845, test acc 0.840
+'''

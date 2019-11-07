@@ -12,23 +12,7 @@ import utils
 
 print('获取和读取数据')
 batch_size = 256
-num_worker = 4
-mnist_train = torchvision.datasets.FashionMNIST(root='./data',
-                                                train=True,
-                                                download=True,
-                                                transform=transforms.ToTensor())
-mnist_test = torchvision.datasets.FashionMNIST(root='./data',
-                                               train=False,
-                                               download=True,
-                                               transform=transforms.ToTensor())
-train_iter = Data.DataLoader(mnist_train,
-                             batch_size=batch_size,
-                             shuffle=True,
-                             num_workers=num_worker)
-test_iter = Data.DataLoader(mnist_test,
-                            batch_size=batch_size,
-                            shuffle=False,
-                            num_workers=num_worker)
+train_iter, test_iter = utils.load_data_fashion_mnist(batch_size)
 
 print('定义和初始化模型')
 num_inputs = 784
@@ -59,3 +43,17 @@ optimizer = torch.optim.SGD(net.parameters(), lr=0.1)
 print('训练模型')
 num_epochs = 10
 utils.train_softmax(net, train_iter, test_iter, loss, num_epochs, batch_size, None, None, optimizer)
+
+'''
+训练模型
+epoch 1, loss 0.0031, train acc 0.748, test acc 0.783
+epoch 2, loss 0.0022, train acc 0.813, test acc 0.799
+epoch 3, loss 0.0021, train acc 0.826, test acc 0.807
+epoch 4, loss 0.0020, train acc 0.833, test acc 0.820
+epoch 5, loss 0.0019, train acc 0.836, test acc 0.824
+epoch 6, loss 0.0019, train acc 0.840, test acc 0.828
+epoch 7, loss 0.0018, train acc 0.843, test acc 0.772
+epoch 8, loss 0.0018, train acc 0.844, test acc 0.831
+epoch 9, loss 0.0018, train acc 0.847, test acc 0.830
+epoch 10, loss 0.0018, train acc 0.848, test acc 0.836
+'''

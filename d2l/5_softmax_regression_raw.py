@@ -146,3 +146,19 @@ titles = [true + '\n' + pred for true, pred in zip(true_labels, pred_labels)]
 
 show_fashion_mnist(X[0:9], titles[0:9])
 
+'''
+完整读取一次训练数据所需要的时间
+1.35 sec
+模型训练
+epoch 1, loss 0.7861, train acc 0.747, test acc 0.796
+epoch 2, loss 0.5704, train acc 0.814, test acc 0.813
+epoch 3, loss 0.5244, train acc 0.827, test acc 0.821
+epoch 4, loss 0.5013, train acc 0.832, test acc 0.825
+epoch 5, loss 0.4858, train acc 0.836, test acc 0.826
+epoch 6, loss 0.4746, train acc 0.840, test acc 0.826
+epoch 7, loss 0.4649, train acc 0.843, test acc 0.832
+epoch 8, loss 0.4582, train acc 0.844, test acc 0.833
+epoch 9, loss 0.4519, train acc 0.846, test acc 0.833
+epoch 10, loss 0.4468, train acc 0.848, test acc 0.836
+预测并输出结果
+'''
