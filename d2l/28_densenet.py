@@ -101,3 +101,10 @@ print('训练模型')
 lr, num_epochs = 0.001, 2
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 utils.train_cnn(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
+'''
+training on cpu
+epoch 1, loss 0.0018, train acc 0.835, test acc 0.825, time 2152.4 sec
+epoch 2, loss 0.0011, train acc 0.899, test acc 0.873, time 2131.0 sec
+'''
+

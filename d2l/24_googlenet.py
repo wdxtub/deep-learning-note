@@ -74,3 +74,9 @@ print('训练模型，只 1 轮')
 lr, num_epochs = 0.002, 1
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 utils.train_cnn(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
+'''
+训练模型，只 1 轮
+training on cpu
+epoch 1, loss 0.0058, train acc 0.414, test acc 0.754, time 2282.1 sec
+'''

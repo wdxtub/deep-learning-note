@@ -85,5 +85,8 @@ optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 utils.train_cnn(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
 
 '''
-
+训练模型
+training on cpu
+epoch 1, loss 0.0015, train acc 0.856, test acc 0.898, time 2505.6 sec
+epoch 2, loss 0.0010, train acc 0.909, test acc 0.904, time 2480.5 sec
 '''
