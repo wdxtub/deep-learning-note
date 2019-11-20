@@ -50,7 +50,7 @@ do
 	--master ${MASTER} \
 	--deploy-mode client \
 	--queue ${QUEUE} \
-	--num-executors 2 \
+	--num-executors 3 \
 	--executor-memory 2G \
 	--py-files ${script_dir}tfspark.zip,${script_dir}adactr_dist.py \
 	--conf spark.dynamicAllocation.enabled=false \
@@ -63,7 +63,7 @@ do
 	--export_dir ${export_dir} \
 	--data_dir ${data_dir} \
 	--tfrecord_dir ${tfrecord_dir} \
-	--cluster_size 2 \
+	--cluster_size 3 \
 	--prediction_dir ${prediction_dir} \
 	--save_checkpoint_steps 5000 \
 	--batch_size 128

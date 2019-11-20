@@ -94,7 +94,7 @@ def map_fun(args, ctx):
     
     print("========= Start Training")
     # just test
-    LEARNING_RATE = 0.003
+    LEARNING_RATE = 0.01
     TRAIN_STEPS = 1000
     ADANET_ITERATIONS = 2
 
@@ -127,7 +127,7 @@ def map_fun(args, ctx):
             seed=RANDOM_SEED),
         max_iteration_steps=TRAIN_STEPS,
         evaluator=adanet.Evaluator(
-            input_fn=new_input_fn("test"),
+            input_fn=new_input_fn("train"),
             steps=None
         ),
         config=config
@@ -137,7 +137,7 @@ def map_fun(args, ctx):
         estimator,
         train_spec=tf.estimator.TrainSpec(
             input_fn=new_input_fn("train"),
-            max_steps=TRAIN_STEPS),
+            max_steps=TRAIN_STEPS*3),
         eval_spec=tf.estimator.EvalSpec(
             input_fn=new_input_fn("test"),
             steps=None)
