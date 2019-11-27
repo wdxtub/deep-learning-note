@@ -25,6 +25,7 @@ parser.add_argument("--shuffle_size", help="size of shuffle buffer", type=int, d
 # Folder
 parser.add_argument("--tfrecord_dir", help="HDFS path to DSP data for saving in tfrecord format")
 parser.add_argument("--data_dir", help="HDFS path to DSP data in parallelized format")
+parser.add_argument("--test_dir", help="HDFS path to DSP data in parallelized format")
 parser.add_argument("--log_dir", help="HDFS path to save/load model during train/inference", default="mnist_model")
 parser.add_argument("--export_dir", help="HDFS path to save/load model during train/inference", default="mnist_model")
 parser.add_argument("--prediction_dir", help="HDFS path to save test/inference output", default="predictions")
@@ -44,10 +45,11 @@ print("args:", args)
 print("{0} ===== Start".format(datetime.now().isoformat()))
 
 if args.mode == 'train':
-    cluster = TFCluster.run(sc, adactr_dist.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.TENSORFLOW)
+    cluster = TFCluster.run(sc, adactr_dist.map_fun, args, args.cluster_size, num_ps, args.tensorboard, TFCluster.InputMode.TENSORFLOW, master_node='chief')
     cluster.shutdown()
 elif args.mode == 'inference':
     print('inference part')
+    
 elif args.mode == 'export':
     print('export part')
 elif args.mode == 'prepare':

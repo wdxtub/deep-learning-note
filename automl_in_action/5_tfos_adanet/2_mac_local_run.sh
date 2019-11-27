@@ -3,7 +3,7 @@ line="========================================"
 line1="- - - - - - - - - - - - -"
 echo $line
 echo "  Adanet + TFOS算法 Tensorflow On Spark 本地运行脚本"
-echo "python 3.6.8, tensorflow 1.14.0, spark standalone 2.4"
+echo "python 3.6.8, tensorflow 1.9.0, spark standalone 2.4"
 echo $line1
 
 export QUEUE=default
@@ -20,6 +20,7 @@ log_dir=/Users/dawang/Desktop/tfos_test/logs/${date_str}
 export_dir=/Users/dawang/Desktop/tfos_test/models/${date_str}
 prediction_dir=/Users/dawang/Desktop/tfos_test/predictions/${date_str}
 # 这里的数据文件需要命名为 part-* 才能够被读取
+test_dir=/Users/dawang/Desktop/tfos_test/test/
 data_dir=/Users/dawang/Desktop/tfos_test/data/
 tfrecord_dir=/Users/dawang/Desktop/tfos_test/tfrecord/
 script_dir=./scripts/train/
@@ -35,11 +36,13 @@ echo "[Log Dir]" ${log_dir}
 echo "[Export Dir]" ${export_dir}
 echo "[Prediction Dir]" ${prediction_dir}
 echo "[Data Dir]" ${data_dir}
+echo "[Test Dir]" ${test_dir}
 echo $line
 
 # echo "清理 ${export_dir}"
 # rm -r ${export_dir}/*
 
+timer_start=`date "+%Y-%m-%d %H:%M:%S"`
 #for mode in train inference export
 for mode in train
 do
@@ -50,7 +53,6 @@ do
 	--master ${MASTER} \
 	--deploy-mode client \
 	--queue ${QUEUE} \
-	--num-executors 3 \
 	--executor-memory 2G \
 	--py-files ${script_dir}tfspark.zip,${script_dir}adactr_dist.py \
 	--conf spark.dynamicAllocation.enabled=false \
@@ -61,6 +63,7 @@ do
 	--mode ${mode} \
 	--log_dir ${log_dir} \
 	--export_dir ${export_dir} \
+	--test_dir ${test_dir} \
 	--data_dir ${data_dir} \
 	--tfrecord_dir ${tfrecord_dir} \
 	--cluster_size 3 \
@@ -68,3 +71,7 @@ do
 	--save_checkpoint_steps 5000 \
 	--batch_size 128
 done
+
+timer_end=`date "+%Y-%m-%d %H:%M:%S"`
+echo "Start ${timer_start}"
+echo "End ${timer_end}"
