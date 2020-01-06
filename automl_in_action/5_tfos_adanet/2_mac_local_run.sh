@@ -17,7 +17,7 @@ date_str=`date +'%Y%m%d-%H%M%S'`
 echo "本次模型版本" ${date_str}
 
 log_dir=/Users/dawang/Desktop/tfos_test/logs/${date_str}
-export_dir=/Users/dawang/Desktop/tfos_test/models/${date_str}
+export_dir=/Users/dawang/Desktop/tfos_test/models/
 prediction_dir=/Users/dawang/Desktop/tfos_test/predictions/${date_str}
 # 这里的数据文件需要命名为 part-* 才能够被读取
 test_dir=/Users/dawang/Desktop/tfos_test/test/
@@ -75,3 +75,7 @@ done
 timer_end=`date "+%Y-%m-%d %H:%M:%S"`
 echo "Start ${timer_start}"
 echo "End ${timer_end}"
+
+echo "result"
+cat ${log_dir}/evaluate
+echo "all done"
