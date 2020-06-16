@@ -1,0 +1,56 @@
+import numpy as np
+
+print('= 赋值是引用赋值，修改会影响其他变量')
+a = np.arange(6)
+print('a', a)
+b = a
+c = a
+d = c
+print('赋值 b = a, c = a, d = c, a[0] = 12')
+print('a', a)
+print('b', b)
+print('c', c)
+print('d', d)
+print('b is a', b is a)
+print('b is c', b is c)
+print('d is a', d is a)
+print('赋值 d[1:3] = [66, 77]')
+d[1:3] = [66, 77]
+print('a', a)
+print('b', b)
+print('c', c)
+print('d', d)
+print('可以看到全部都变化了')
+
+print('copy 是值复制，不会关联')
+new_a = a.copy()
+a[3] = 66
+print('a', a)
+print('new_a', new_a)
+
+print('广播机制')
+a = np.array([[0, 0, 0], [10, 10, 10], [20, 20, 20]])
+b = np.array([6, 7, 8])
+print('a', a.shape, a)
+print('b', b.shape, b)
+print('a+b', a+b)
+
+print('统计元素个数')
+a = np.array([1, 2, 3, 3, 4, 4, 4, 0, 0, 2, 2])
+print('a', a)
+print('各个元素个数', np.bincount(a))
+a = np.array([-0.6, 1.234, 2.345, 3.456])
+print('a', a)
+print('取 0 位小数', np.around(a, decimals=0))
+print('取 1 位小数', np.around(a, decimals=1))
+print('floor 取整', np.floor(a))
+print('ceil 取上限', np.ceil(a))
+print('通过 where 来条件填充，第一个参数是不填充的条件', np.where(a > 0, a, 666))
+a = np.array([4, 9, 16, 25])
+b = np.array([1, 10, 15, 30])
+print('a', a)
+print('b', b)
+print('a 开方', np.sqrt(a))
+print('a 平方', np.square(a))
+print('a 和 b 取大的', np.maximum(a, b))
+print('元素比较 a 和 b', np.greater(a, b))
