@@ -32,5 +32,5 @@
 
 + py3 环境使用 python 3.7.3
 + pyctr 环境使用 python 3.6.8，tf 1.14.0
-+ py36 环境使用 python 3.6.8，tf 1.7.0
++ py36 环境使用 python 3.6.8，tf 1.7.0，启动 jupyter `jupyter notebook`
 + torch 环境使用 python 3.6.8, torch 1.3.0, torchvision 0.4.1, torchtext 0.4.0
