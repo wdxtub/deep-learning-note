@@ -1,6 +1,6 @@
 # deep-learning-note
 
-个人学习深度学习的笔记
+个人学习深度学习的笔记，已迁移到 https://gitee.com/wdxtub/deep-learning-note 后续本 repo 将不再更新
 
 ## 书籍
 
